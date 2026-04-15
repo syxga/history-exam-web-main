@@ -14,12 +14,10 @@
         h1 { font-size: 26px; color: #2c3e50; margin-bottom: 10px; }
         h2 { font-size: 18px; color: #546e7a; margin-top: 20px; margin-bottom: 10px; }
 
-        /* 💡 족보 뱃지 및 문제 상자 디자인 */
         #questionBox { background-color: #e3f2fd; border-left: 6px solid #2196F3; padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 18px; font-weight: bold; line-height: 1.6; color: #1565c0; text-align: left; word-break: keep-all; position: relative; }
         .jokbo-badge { display: inline-block; background-color: #FF5252; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(255, 82, 82, 0.3); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* 4지선다 버튼 */
         .options-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         .option-btn { background-color: #fff; border: 2px solid #cfd8dc; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: bold; color: #455a64; cursor: pointer; transition: 0.2s; text-align: center; }
         .option-btn:active { transform: scale(0.98); }
@@ -27,11 +25,9 @@
         .option-btn.wrong { background-color: #ffebee !important; border-color: #f44336 !important; color: #c62828 !important; text-decoration: line-through; }
         .option-btn:disabled { cursor: default; opacity: 0.9; }
 
-        /* 일반 버튼 */
         .btn-start { background-color: #2196F3; color: white; font-size: 18px; width: 100%; max-width: 300px; padding: 16px; margin-top: 20px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .btn-next { background-color: #37474f; color: white; padding: 15px; border-radius: 10px; width: 100%; margin-top: 20px; font-weight: bold; display: none; border: none; font-size: 16px; cursor: pointer; }
         
-        /* 오답노트 전용 내비게이션 버튼 */
         .nav-group { display: none; width: 100%; gap: 10px; margin-top: 20px; }
         .btn-nav { background-color: #607d8b; color: white; flex: 1; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-nav:hover:not(:disabled) { background-color: #455a64; }
@@ -40,15 +36,11 @@
         #resultMsg { font-size: 20px; font-weight: bold; margin-top: 15px; min-height: 24px; }
         #scoreLabel { font-size: 14px; font-weight: bold; color: #90a4ae; text-align: right; }
 
-        /* 옵션 그룹 (체크박스, 라디오) */
         .radio-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 15px 0; }
         .radio-group label { background-color: #f5f5f5; padding: 12px 15px; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer; font-size: 15px; font-weight: bold; box-sizing: border-box; transition: 0.2s; }
         .radio-group input { display: none; } 
         
-        /* 라디오(문항 수) 선택 디자인 */
         .radio-group label:has(input[type="radio"]:checked) { border-color: #2196F3; background-color: #e3f2fd; color: #1976D2; }
-        
-        /* 💡 족보 체크박스 전용 디자인 */
         .radio-group label:has(input[type="checkbox"]:checked) { border-color: #FF5252; background-color: #ffebee; color: #d32f2f; }
 
         .creator { margin-top: 40px; padding-top: 20px; border-top: 1px dashed #cfd8dc; font-size: 13px; color: #b0bec5; font-weight: bold; }
@@ -100,7 +92,7 @@
     <div id="endScreen" class="screen">
         <h1>🎉 학습 완료!</h1>
         <h2 id="finalMsg" style="line-height: 1.5;"></h2>
-        <button class="btn-start" onclick="location.reload()" style="background-color: #4CAF50;">🔄 다시 도전하기</button>
+        <button class="btn-start" onclick="location.reload()" style="background-color: #4CAF50;">🔄 처음부터 다시하기</button>
     </div>
 
     <div class="creator">제작자 : ch</div>
@@ -109,6 +101,8 @@
     <details class="update-log">
         <summary>📢 업데이트 내역</summary>
         <ul>
+            <li><b>v1.4</b> - 🐛 오답노트 결과 점수(맞춘 개수 / 오답 개수) 독립 표기 기능 수정</li>
+            <li><b>v1.3</b> - 🐛 오답노트 종료 시 점수 표기 방식 개선</li>
             <li><b>v1.2</b> - 🔥 족보 문제 강조 및 족보 모아풀기 기능 추가</li>
             <li><b>v1.1</b> - 📝 오답노트(앞뒤 이동) 기능 완벽 이식</li>
             <li><b>v1.0</b> - 🩺 의학사 인물 퀴즈 시뮬레이터 배포</li>
@@ -121,10 +115,14 @@
     let quizSet = [];
     let wrongData = [];
     let currentIdx = 0;
-    let score = 0;
+    
+    // 점수 관련 변수 분리
+    let score = 0; // 본 시험 점수
+    let totalQuestions = 0; // 본 시험 전체 문제 수
+    let reviewScore = 0; // 💡 오답노트에서 맞춘 개수를 저장할 변수 추가
+    
     let isReviewMode = false;
 
-    // 💡 CSV에서 3번째 열(족보 여부)까지 읽어오도록 수정
     Papa.parse("data.csv", {
         download: true, header: false, skipEmptyLines: true,
         complete: function(results) {
@@ -135,7 +133,6 @@
                 
                 const name = row[0].trim();
                 const achievement = row[1].trim();
-                // C열에 'O'나 'o'가 적혀있으면 족보로 인식
                 const isJokbo = row.length >= 3 && row[2] && row[2].trim().toUpperCase() === 'O';
                 
                 allData.push({ name: name, desc: achievement, isJokbo: isJokbo });
@@ -153,7 +150,6 @@
     }
 
     function startQuiz() {
-        // 💡 족보 집중 모드가 체크되었는지 확인
         const isJokboOnly = document.getElementById('jokboOnly').checked;
         let filtered = [...allData];
 
@@ -169,8 +165,14 @@
         const qCount = parseInt(document.querySelector('input[name="qCount"]:checked').value);
         shuffle(filtered);
         quizSet = filtered.slice(0, Math.min(qCount, filtered.length));
-
-        currentIdx = 0; score = 0; wrongData = []; isReviewMode = false;
+        
+        totalQuestions = quizSet.length;
+        currentIdx = 0; 
+        score = 0; 
+        reviewScore = 0; // 오답노트 점수 초기화
+        wrongData = []; 
+        isReviewMode = false;
+        
         document.getElementById('startScreen').classList.remove('active');
         document.getElementById('quizScreen').classList.add('active');
         loadQuestion();
@@ -179,23 +181,35 @@
     function loadQuestion() {
         if (currentIdx >= quizSet.length) {
             if (!isReviewMode && wrongData.length > 0) {
-                if (confirm(`본 시험 종료!\n점수: ${score} / ${quizSet.length}\n\n틀린 문제(${wrongData.length}개)를 복습하시겠습니까?`)) {
+                if (confirm(`본 시험 종료!\n점수: ${score} / ${totalQuestions}점\n\n틀린 문제(${wrongData.length}개)를 복습하시겠습니까?`)) {
                     isReviewMode = true;
                     quizSet = [...wrongData];
                     currentIdx = 0;
+                    reviewScore = 0; // 💡 오답노트 진입 시 복습 점수 0으로 시작
                     loadQuestion();
                     return;
                 }
             }
             document.getElementById('quizScreen').classList.remove('active');
             document.getElementById('endScreen').classList.add('active');
-            document.getElementById('finalMsg').innerText = `최종 점수: ${score} / ${isReviewMode ? wrongData.length : quizSet.length}점\n\n고생하셨습니다!`;
+            
+            const finalMsgEl = document.getElementById('finalMsg');
+            
+            // 💡 오답노트 종료 시 보여줄 문구 완벽 분리
+            if (isReviewMode) {
+                finalMsgEl.innerHTML = `
+                    <div style="font-size:24px; color:#1976D2; margin-bottom:10px;">📝 오답 복습 결과: ${reviewScore} / ${quizSet.length}점</div>
+                    <div style="font-size:16px; color:#78909c; margin-bottom:20px;">(본 시험 점수: ${score} / ${totalQuestions}점)</div>
+                    <span style="color:#2e7d32;">복습까지 완벽하게 완료했습니다! 💯</span>
+                `;
+            } else {
+                finalMsgEl.innerHTML = `최종 점수: ${score} / ${totalQuestions}점<br><br>고생하셨습니다!`;
+            }
             return;
         }
 
         const currentQ = quizSet[currentIdx];
         
-        // 💡 족보 인물일 경우 강렬한 뱃지 표시
         const badgeHtml = currentQ.isJokbo ? `<div class="jokbo-badge">🔥 족보 빈출 인물</div><br>` : '';
         document.getElementById('questionBox').innerHTML = `${badgeHtml}"${currentQ.desc}"`;
         
@@ -244,7 +258,12 @@
         btns.forEach(b => b.disabled = true); 
 
         if (selected === correct) {
-            if (!isReviewMode) score++; 
+            // 💡 본 시험과 오답노트의 점수를 각각 따로 계산합니다!
+            if (!isReviewMode) {
+                score++; 
+            } else {
+                reviewScore++; 
+            }
             btn.classList.add('correct');
             document.getElementById('resultMsg').innerText = "⭕ 정답입니다!";
             document.getElementById('resultMsg').style.color = "#4CAF50";
