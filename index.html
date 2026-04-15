@@ -14,8 +14,10 @@
         h1 { font-size: 26px; color: #2c3e50; margin-bottom: 10px; }
         h2 { font-size: 18px; color: #546e7a; margin-top: 20px; margin-bottom: 10px; }
 
-        /* 문제 상자 */
-        #questionBox { background-color: #e3f2fd; border-left: 6px solid #2196F3; padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 18px; font-weight: bold; line-height: 1.6; color: #1565c0; text-align: left; word-break: keep-all; }
+        /* 💡 족보 뱃지 및 문제 상자 디자인 */
+        #questionBox { background-color: #e3f2fd; border-left: 6px solid #2196F3; padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 18px; font-weight: bold; line-height: 1.6; color: #1565c0; text-align: left; word-break: keep-all; position: relative; }
+        .jokbo-badge { display: inline-block; background-color: #FF5252; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(255, 82, 82, 0.3); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* 4지선다 버튼 */
         .options-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
@@ -26,10 +28,10 @@
         .option-btn:disabled { cursor: default; opacity: 0.9; }
 
         /* 일반 버튼 */
-        .btn-start { background-color: #2196F3; color: white; font-size: 18px; width: 100%; max-width: 300px; padding: 16px; margin-top: 30px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-start { background-color: #2196F3; color: white; font-size: 18px; width: 100%; max-width: 300px; padding: 16px; margin-top: 20px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .btn-next { background-color: #37474f; color: white; padding: 15px; border-radius: 10px; width: 100%; margin-top: 20px; font-weight: bold; display: none; border: none; font-size: 16px; cursor: pointer; }
         
-        /* 💡 오답노트 전용 내비게이션 버튼 */
+        /* 오답노트 전용 내비게이션 버튼 */
         .nav-group { display: none; width: 100%; gap: 10px; margin-top: 20px; }
         .btn-nav { background-color: #607d8b; color: white; flex: 1; border: none; border-radius: 10px; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-nav:hover:not(:disabled) { background-color: #455a64; }
@@ -38,10 +40,16 @@
         #resultMsg { font-size: 20px; font-weight: bold; margin-top: 15px; min-height: 24px; }
         #scoreLabel { font-size: 14px; font-weight: bold; color: #90a4ae; text-align: right; }
 
+        /* 옵션 그룹 (체크박스, 라디오) */
         .radio-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 15px 0; }
         .radio-group label { background-color: #f5f5f5; padding: 12px 15px; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer; font-size: 15px; font-weight: bold; box-sizing: border-box; transition: 0.2s; }
-        .radio-group input[type="radio"] { display: none; } 
-        .radio-group label:has(input:checked) { border-color: #2196F3; background-color: #e3f2fd; color: #1976D2; }
+        .radio-group input { display: none; } 
+        
+        /* 라디오(문항 수) 선택 디자인 */
+        .radio-group label:has(input[type="radio"]:checked) { border-color: #2196F3; background-color: #e3f2fd; color: #1976D2; }
+        
+        /* 💡 족보 체크박스 전용 디자인 */
+        .radio-group label:has(input[type="checkbox"]:checked) { border-color: #FF5252; background-color: #ffebee; color: #d32f2f; }
 
         .creator { margin-top: 40px; padding-top: 20px; border-top: 1px dashed #cfd8dc; font-size: 13px; color: #b0bec5; font-weight: bold; }
         .btn-report { display: inline-block; margin-top: 8px; padding: 6px 12px; background-color: #FEE500; color: #3c1e1e; text-decoration: none; border-radius: 15px; font-size: 12px; font-weight: bold; }
@@ -58,6 +66,11 @@
         <h1>🩺 싱글벙글 의학사 인물 퀴즈</h1>
         <p id="totalCountInfo" style="color: #607d8b; font-size: 15px; font-weight: bold;">데이터 로딩 중...</p>
         
+        <h2>[선택] 학습 모드</h2>
+        <div class="radio-group" style="margin-bottom: 25px;">
+            <label><input type="checkbox" id="jokboOnly"><span>🔥 족보 출제 인물만 풀기</span></label>
+        </div>
+
         <h2>문항 수를 선택해주세요</h2>
         <div class="radio-group">
             <label><input type="radio" name="qCount" value="10" checked><span>10문제</span></label>
@@ -96,6 +109,7 @@
     <details class="update-log">
         <summary>📢 업데이트 내역</summary>
         <ul>
+            <li><b>v1.2</b> - 🔥 족보 문제 강조 및 족보 모아풀기 기능 추가</li>
             <li><b>v1.1</b> - 📝 오답노트(앞뒤 이동) 기능 완벽 이식</li>
             <li><b>v1.0</b> - 🩺 의학사 인물 퀴즈 시뮬레이터 배포</li>
         </ul>
@@ -110,16 +124,24 @@
     let score = 0;
     let isReviewMode = false;
 
+    // 💡 CSV에서 3번째 열(족보 여부)까지 읽어오도록 수정
     Papa.parse("data.csv", {
         download: true, header: false, skipEmptyLines: true,
         complete: function(results) {
             const rows = results.data;
             for (let i = 1; i < rows.length; i++) {
-                const [name, achievement] = rows[i];
-                if (!name || !achievement) continue;
-                allData.push({ name: name.trim(), desc: achievement.trim() });
+                const row = rows[i];
+                if (row.length < 2 || !row[0].trim()) continue;
+                
+                const name = row[0].trim();
+                const achievement = row[1].trim();
+                // C열에 'O'나 'o'가 적혀있으면 족보로 인식
+                const isJokbo = row.length >= 3 && row[2] && row[2].trim().toUpperCase() === 'O';
+                
+                allData.push({ name: name, desc: achievement, isJokbo: isJokbo });
             }
-            document.getElementById('totalCountInfo').innerText = `총 ${allData.length}명의 인물 데이터 로드 완료`;
+            const jokboCount = allData.filter(d => d.isJokbo).length;
+            document.getElementById('totalCountInfo').innerText = `총 ${allData.length}명 로드 완료 (🔥 족보: ${jokboCount}명)`;
         }
     });
 
@@ -131,10 +153,20 @@
     }
 
     function startQuiz() {
-        if (allData.length < 4) return alert("데이터가 부족합니다. (최소 4명 필요)");
+        // 💡 족보 집중 모드가 체크되었는지 확인
+        const isJokboOnly = document.getElementById('jokboOnly').checked;
+        let filtered = [...allData];
+
+        if (isJokboOnly) {
+            filtered = filtered.filter(item => item.isJokbo);
+            if (filtered.length < 4) {
+                return alert(`족보(O)로 표시된 인물이 ${filtered.length}명밖에 없습니다.\n4지선다를 위해 최소 4명 이상의 족보 인물을 등록해주세요.`);
+            }
+        } else {
+            if (filtered.length < 4) return alert("데이터가 부족합니다. (최소 4명 필요)");
+        }
 
         const qCount = parseInt(document.querySelector('input[name="qCount"]:checked').value);
-        let filtered = [...allData];
         shuffle(filtered);
         quizSet = filtered.slice(0, Math.min(qCount, filtered.length));
 
@@ -145,7 +177,6 @@
     }
 
     function loadQuestion() {
-        // 💡 퀴즈(또는 오답노트)가 끝났는지 확인
         if (currentIdx >= quizSet.length) {
             if (!isReviewMode && wrongData.length > 0) {
                 if (confirm(`본 시험 종료!\n점수: ${score} / ${quizSet.length}\n\n틀린 문제(${wrongData.length}개)를 복습하시겠습니까?`)) {
@@ -163,10 +194,12 @@
         }
 
         const currentQ = quizSet[currentIdx];
-        document.getElementById('questionBox').innerText = `"${currentQ.desc}"`;
-        document.getElementById('resultMsg').innerText = "";
         
-        // 버튼 상태 초기화
+        // 💡 족보 인물일 경우 강렬한 뱃지 표시
+        const badgeHtml = currentQ.isJokbo ? `<div class="jokbo-badge">🔥 족보 빈출 인물</div><br>` : '';
+        document.getElementById('questionBox').innerHTML = `${badgeHtml}"${currentQ.desc}"`;
+        
+        document.getElementById('resultMsg').innerText = "";
         document.getElementById('nextBtnNormal').style.display = "none";
         
         if (isReviewMode) {
@@ -174,7 +207,6 @@
             document.getElementById('scoreLabel').style.color = "#1976D2";
             document.getElementById('navGroup').style.display = "flex";
             
-            // 내비게이션 버튼 제어
             document.getElementById('prevBtn').disabled = (currentIdx === 0);
             const nextNavBtn = document.getElementById('nextBtnNav');
             if (currentIdx === quizSet.length - 1) {
@@ -190,7 +222,6 @@
             document.getElementById('navGroup').style.display = "none";
         }
 
-        // 💡 오답 3명 무작위 추출 및 버튼 세팅 (본 시험, 오답노트 모두 동일하게 작동하여 연습 효과 상승!)
         let others = allData.filter(item => item.name !== currentQ.name);
         shuffle(others);
         
@@ -210,28 +241,26 @@
 
     function checkAnswer(btn, selected, correct) {
         const btns = document.querySelectorAll('.option-btn');
-        btns.forEach(b => b.disabled = true); // 한 번 고르면 수정 불가
+        btns.forEach(b => b.disabled = true); 
 
         if (selected === correct) {
-            if (!isReviewMode) score++; // 본 시험에서만 점수 카운트
+            if (!isReviewMode) score++; 
             btn.classList.add('correct');
             document.getElementById('resultMsg').innerText = "⭕ 정답입니다!";
             document.getElementById('resultMsg').style.color = "#4CAF50";
         } else {
-            if (!isReviewMode) wrongData.push(quizSet[currentIdx]); // 본 시험에서 틀리면 오답노트에 추가
+            if (!isReviewMode) wrongData.push(quizSet[currentIdx]); 
             btn.classList.add('wrong');
             btns.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
             document.getElementById('resultMsg').innerText = "❌ 오답입니다.";
             document.getElementById('resultMsg').style.color = "#f44336";
         }
         
-        // 본 시험 모드일 때만 큼지막한 다음 버튼 표시
         if (!isReviewMode) {
             document.getElementById('nextBtnNormal').style.display = "block";
         }
     }
 
-    // 문제 이동 (다음으로 가기 + 오답노트에서 이전으로 가기)
     function changeQuestion(offset) {
         currentIdx += offset;
         loadQuestion();
