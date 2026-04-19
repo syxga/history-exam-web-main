@@ -18,8 +18,14 @@
         .jokbo-badge { display: inline-block; background-color: #FF5252; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(255, 82, 82, 0.3); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
+        /* 💡 4지선다(일반 모드) 그룹 */
         .options-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .option-btn { background-color: #fff; border: 2px solid #cfd8dc; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: bold; color: #455a64; cursor: pointer; transition: 0.2s; text-align: center; }
+        
+        /* 💡 10지선다(하드 모드) 전용 그리드 레이아웃 */
+        .options-group.hard-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .options-group.hard-mode-grid .option-btn { padding: 12px 8px; font-size: 15px; }
+
+        .option-btn { background-color: #fff; border: 2px solid #cfd8dc; border-radius: 12px; padding: 16px; font-size: 17px; font-weight: bold; color: #455a64; cursor: pointer; transition: 0.2s; text-align: center; word-break: keep-all; }
         .option-btn:active { transform: scale(0.98); }
         .option-btn.correct { background-color: #e8f5e9 !important; border-color: #4CAF50 !important; color: #2e7d32 !important; }
         .option-btn.wrong { background-color: #ffebee !important; border-color: #f44336 !important; color: #c62828 !important; text-decoration: line-through; }
@@ -42,6 +48,9 @@
         
         .radio-group label:has(input[type="radio"]:checked) { border-color: #2196F3; background-color: #e3f2fd; color: #1976D2; }
         .radio-group label:has(input[type="checkbox"]:checked) { border-color: #FF5252; background-color: #ffebee; color: #d32f2f; }
+        
+        /* 하드모드 체크박스 전용 디자인 (보라색 느낌) */
+        .radio-group label:has(input#hardMode:checked) { border-color: #9C27B0; background-color: #F3E5F5; color: #7B1FA2; }
 
         .creator { margin-top: 40px; padding-top: 20px; border-top: 1px dashed #cfd8dc; font-size: 13px; color: #b0bec5; font-weight: bold; }
         .btn-report { display: inline-block; margin-top: 8px; padding: 6px 12px; background-color: #FEE500; color: #3c1e1e; text-decoration: none; border-radius: 15px; font-size: 12px; font-weight: bold; }
@@ -61,6 +70,7 @@
         <h2>[선택] 학습 모드</h2>
         <div class="radio-group" style="margin-bottom: 25px;">
             <label><input type="checkbox" id="jokboOnly"><span>🔥 족보 출제 인물만 풀기</span></label>
+            <label><input type="checkbox" id="hardMode"><span>😈 하드 모드 (선지 10개)</span></label>
         </div>
 
         <h2>문항 수를 선택해주세요</h2>
@@ -101,7 +111,8 @@
     <details class="update-log">
         <summary>📢 업데이트 내역</summary>
         <ul>
-            <li><b>v1.4</b> - 🐛 오답노트 결과 점수(맞춘 개수 / 오답 개수) 독립 표기 기능 수정</li>
+            <li><b>v1.5</b> - 😈 선지 10개! 헬 난이도 '하드 모드' 기능 추가</li>
+            <li><b>v1.4</b> - 🐛 오답노트 결과 점수 독립 표기 기능 수정</li>
             <li><b>v1.3</b> - 🐛 오답노트 종료 시 점수 표기 방식 개선</li>
             <li><b>v1.2</b> - 🔥 족보 문제 강조 및 족보 모아풀기 기능 추가</li>
             <li><b>v1.1</b> - 📝 오답노트(앞뒤 이동) 기능 완벽 이식</li>
@@ -116,12 +127,12 @@
     let wrongData = [];
     let currentIdx = 0;
     
-    // 점수 관련 변수 분리
-    let score = 0; // 본 시험 점수
-    let totalQuestions = 0; // 본 시험 전체 문제 수
-    let reviewScore = 0; // 💡 오답노트에서 맞춘 개수를 저장할 변수 추가
+    let score = 0; 
+    let totalQuestions = 0; 
+    let reviewScore = 0; 
     
     let isReviewMode = false;
+    let isHardModeActive = false; // 하드모드 상태 저장 변수
 
     Papa.parse("data.csv", {
         download: true, header: false, skipEmptyLines: true,
@@ -151,15 +162,23 @@
 
     function startQuiz() {
         const isJokboOnly = document.getElementById('jokboOnly').checked;
+        isHardModeActive = document.getElementById('hardMode').checked; // 하드모드 켜짐 여부 확인
+
         let filtered = [...allData];
 
+        // 족보 필터링 적용
         if (isJokboOnly) {
             filtered = filtered.filter(item => item.isJokbo);
-            if (filtered.length < 4) {
-                return alert(`족보(O)로 표시된 인물이 ${filtered.length}명밖에 없습니다.\n4지선다를 위해 최소 4명 이상의 족보 인물을 등록해주세요.`);
-            }
-        } else {
-            if (filtered.length < 4) return alert("데이터가 부족합니다. (최소 4명 필요)");
+        }
+
+        // 💡 하드모드 최소 인원 검사 (선지가 10개여야 하므로 DB에 최소 10명이 있어야 함)
+        const requiredCount = isHardModeActive ? 10 : 4;
+        
+        if (filtered.length < requiredCount) {
+            let errorMsg = isJokboOnly 
+                ? `해당 모드를 실행하려면 족보(O) 인물이 최소 ${requiredCount}명 필요합니다.\n현재 족보 인물은 ${filtered.length}명입니다.`
+                : `해당 모드를 실행하려면 데이터베이스에 인물이 최소 ${requiredCount}명 필요합니다.`;
+            return alert(errorMsg);
         }
 
         const qCount = parseInt(document.querySelector('input[name="qCount"]:checked').value);
@@ -169,7 +188,7 @@
         totalQuestions = quizSet.length;
         currentIdx = 0; 
         score = 0; 
-        reviewScore = 0; // 오답노트 점수 초기화
+        reviewScore = 0; 
         wrongData = []; 
         isReviewMode = false;
         
@@ -185,7 +204,7 @@
                     isReviewMode = true;
                     quizSet = [...wrongData];
                     currentIdx = 0;
-                    reviewScore = 0; // 💡 오답노트 진입 시 복습 점수 0으로 시작
+                    reviewScore = 0; 
                     loadQuestion();
                     return;
                 }
@@ -194,8 +213,6 @@
             document.getElementById('endScreen').classList.add('active');
             
             const finalMsgEl = document.getElementById('finalMsg');
-            
-            // 💡 오답노트 종료 시 보여줄 문구 완벽 분리
             if (isReviewMode) {
                 finalMsgEl.innerHTML = `
                     <div style="font-size:24px; color:#1976D2; margin-bottom:10px;">📝 오답 복습 결과: ${reviewScore} / ${quizSet.length}점</div>
@@ -236,14 +253,26 @@
             document.getElementById('navGroup').style.display = "none";
         }
 
+        // 💡 하드모드 여부에 따라 추출할 오답 개수 결정
+        const optionsCount = isHardModeActive ? 10 : 4;
+
         let others = allData.filter(item => item.name !== currentQ.name);
         shuffle(others);
         
-        let choices = [currentQ.name, others[0].name, others[1].name, others[2].name];
+        // 정답 1개 + 랜덤 오답 N-1개
+        let choices = [currentQ.name, ...others.slice(0, optionsCount - 1).map(item => item.name)];
         shuffle(choices);
 
         const container = document.getElementById('optionsContainer');
         container.innerHTML = "";
+        
+        // 하드모드일 때는 2열 그리드 레이아웃 적용
+        if (isHardModeActive) {
+            container.classList.add('hard-mode-grid');
+        } else {
+            container.classList.remove('hard-mode-grid');
+        }
+
         choices.forEach(choice => {
             const btn = document.createElement('button');
             btn.className = "option-btn";
@@ -258,7 +287,6 @@
         btns.forEach(b => b.disabled = true); 
 
         if (selected === correct) {
-            // 💡 본 시험과 오답노트의 점수를 각각 따로 계산합니다!
             if (!isReviewMode) {
                 score++; 
             } else {
